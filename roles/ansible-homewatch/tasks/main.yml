@@ -1,0 +1,62 @@
+---
+
+# We should probably update the cache but let's assume
+# someone else did that for us.
+- name: install homewatch deploy dependencies
+  sudo: yes
+  apt:
+    name: "{{item}}"
+    state: present
+  with_items:
+    - git
+    - mercurial
+    - p7zip-full
+    - python-apt
+
+# This will overwrite any changes in the directory so be warned
+- name: pull homewatch
+  sudo: yes
+  git: repo={{remote_repo}}
+       dest={{homewatch_location}}
+       recursive=no
+       accept_hostkey=yes
+       force=yes
+
+# Make the repo a happy place where anything goes.
+- name: repo permissions
+  sudo: yes
+  file: owner=fisher
+        recurse=yes
+        mode=777
+        path={{homewatch_location}}
+
+# We need to do some prep work to enable the first-time-setup
+# included with homewatch to be runnable in non-interactive mode.
+- name: transfer prep homewatch script
+  sudo: yes
+  template: src=prepHomewatch.sh dest={{homewatch_location}}/prepHomewatch.sh mode=777
+
+- name: run prep homewatch script
+  sudo: yes
+  shell: ./prepHomewatch.sh
+  args:
+    chdir: "{{homewatch_location}}"
+
+- name: install homewatch runtime dependencies
+  sudo: yes
+  shell: ./first-time-setup.sh
+  args:
+    chdir: "{{homewatch_location}}"
+    creates: "{{homewatch_location}}/www/composer.lock"
+
+# Perform a variety of dirty changes to make
+# demoing basic capabilities absolutely trivial.
+- name: transfer hack homewatch script
+  sudo: yes
+  template: src=hackHomewatch.sh dest={{homewatch_location}}/hackHomewatch.sh mode=777
+
+- name: run hack homewatch script
+  sudo: yes
+  shell: ./hackHomewatch.sh
+  args:
+    chdir: "{{homewatch_location}}"

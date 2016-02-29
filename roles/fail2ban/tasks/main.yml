@@ -1,0 +1,13 @@
+---
+- name: Install fail2ban
+  apt: pkg=fail2ban state=installed
+  register: fail2ban_install
+  sudo: yes
+  tags:
+    - apt
+
+- name: Install config
+  template: src=jail.local.j2 dest=/etc/fail2ban/jail.local
+  sudo: yes
+  notify:
+    - reload fail2ban

@@ -1,0 +1,29 @@
+---
+- name: add distribution-specific variables
+  sudo: yes
+  include_vars: "{{ ansible_distribution }}.yml"
+
+- name: install unattended-upgrades
+  sudo: yes
+  apt: pkg=unattended-upgrades state=present
+  tags: unattended
+
+- name: install reboot dependencies
+  sudo: yes
+  include: reboot.yml
+  when: unattended_automatic_reboot
+  tags: unattended
+
+- name: create APT auto-upgrades configuration
+  sudo: yes
+  copy: >
+    src=auto-upgrades dest=/etc/apt/apt.conf.d/20auto-upgrades
+    owner=root group=root mode=0644
+  tags: unattended
+
+- name: create unattended-upgrades configuration
+  sudo: yes
+  template: >
+    src=unattended-upgrades.j2 dest=/etc/apt/apt.conf.d/50unattended-upgrades
+    owner=root group=root mode=0644
+  tags: unattended

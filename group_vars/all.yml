@@ -1,0 +1,25 @@
+---
+remote_repo: "https://github.com/chocolateHszd/HomeWatch"
+# The hackHomewatch script will break if you change this without
+# changing that. This will cause the playbook to fail
+homewatch_location: "/var/www/HomeWatch"
+
+
+# apache config
+apache_listen_port: 80
+apache_vhosts:
+  - {servername: "localhost", documentroot: "{{homewatch_location}}"}
+
+# mysql config
+mysql_root_password: ""
+mysql_root_password_update: no
+mysql_databases:
+  - name: stonymountain_hw_apts
+    encoding: latin1
+    collation: latin1_general_ci
+  - name: stonymountain_hw_bas
+    encoding: latin1
+    collation: latin1_general_ci
+
+# php config
+php_packages: ["libapache2-mod-php5", "php5-mysql", "php5-json"]
